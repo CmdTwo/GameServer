@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Operations\BaseOperation.cs" />
+    <Compile Include="Operations\GetCurrentPlayerInfo.cs" />
     <Compile Include="Operations\PlayerMove.cs" />
     <Compile Include="Operations\EnterServer.cs" />
     <Compile Include="Server.cs" />

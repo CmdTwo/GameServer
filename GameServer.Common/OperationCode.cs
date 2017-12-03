@@ -12,5 +12,6 @@ namespace GameServer.Common
         PlayerJoinToGame,
         PlayerLeftGame,
         GetPlayersList,
+        GetCurrentPlayerInfo,
     }
 }

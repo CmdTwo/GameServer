@@ -13,7 +13,5 @@ namespace GameServer.Operations
 
         [DataMember(Code = (byte)ParameterCode.PlayerName)]
         public string PlayerName { get; set; }
-        [DataMember(Code = (byte)ParameterCode.PlayerID)]
-        public int PlayerID { get; set; }
-    }
+     }
 }

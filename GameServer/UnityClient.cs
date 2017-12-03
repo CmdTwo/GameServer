@@ -24,7 +24,7 @@ namespace GameServer
         {
             Log.Info(this.PlayerName + " try to disconnect...");
 
-            World.Instance.RemoveClient(this);
+            World.Instance.RemoveClient(PlayerID);
             PlayerLeftGameHandler(new SendParameters() { Unreliable = true });
         }
         protected override void OnOperationRequest(OperationRequest operationRequest, SendParameters sendParameters)
@@ -56,6 +56,11 @@ namespace GameServer
                         GetPlayersListHandler(sendParameters);
                         break;
                     }
+                case (byte)OperationCode.GetCurrentPlayerInfo:
+                    {
+                        GetCurrentPlayerInfo(sendParameters);
+                        break;
+                    }
                 default:
                     {
                         Log.Debug("Unknow OperationRequest received: " + operationRequest.OperationCode);
@@ -77,21 +82,19 @@ namespace GameServer
             }
 
             PlayerName = enterGameRequest.PlayerName;
-            PlayerID = enterGameRequest.PlayerID;
+            PlayerID = World.Instance.AddClient(this);
 
-            if (World.Instance.IsContain(PlayerName))
-            {
-                SendOperationResponse(enterGameRequest.GetResponse(ErrorCode.PlayerIsExist), sendParameters);
-                return;
-            }
-
-            World.Instance.AddClient(this);
+            SendOperationResponse(enterGameRequest.GetResponse(ErrorCode.InvaildParameters), sendParameters);
 
             OperationResponse response = new OperationResponse(operationRequest.OperationCode);
             response.ReturnCode = (short)ErrorCode.Ok;
             SendOperationResponse(response, sendParameters);
 
-            Log.Info("Player " + PlayerName + " enter to server!");
+            //OperationResponse response = new OperationResponse(operationRequest.OperationCode);
+
+            //SendOperationResponse(response, sendParameters);
+
+            Log.Info("Player " + PlayerName + "(id:" + PlayerID + ") enter to server!");
         }
         private void PlayerMoveHandler(OperationRequest operationRequest, SendParameters sendParameters)
         {
@@ -114,9 +117,9 @@ namespace GameServer
                             { (byte)ParameterCode.PlayerRotY, Position.Rotation.Y },
                             { (byte)ParameterCode.PlayerRotZ, Position.Rotation.Z },
                             { (byte)ParameterCode.PlayerRotW, Position.Rotation.W },
-                            { (byte)ParameterCode.PlayerName, PlayerName }
+                            { (byte)ParameterCode.PlayerID, PlayerID }
                         };
-            eventData.SendTo(World.Instance.Clients.Except(new List<UnityClient> { this }), sendParameters);
+            eventData.SendTo(World.Instance.GetClientsList(PlayerID), sendParameters);
 
             //Log.Info("Player " + PlayerName + " move | x:" + Position.X + " y:" + Position.Y + " z:" + Position.Z);
         }
@@ -132,32 +135,40 @@ namespace GameServer
                             { (byte)ParameterCode.PlayerRotY, Position.Rotation.Y },
                             { (byte)ParameterCode.PlayerRotZ, Position.Rotation.Z },
                             { (byte)ParameterCode.PlayerRotW, Position.Rotation.W },
-                            { (byte)ParameterCode.PlayerName, PlayerName }
+                            { (byte)ParameterCode.PlayerName, PlayerName },
+                            { (byte)ParameterCode.PlayerID, PlayerID }
                         };
-            eventData.SendTo(World.Instance.Clients.Except(new List<UnityClient> { this }), sendParameters);
+            eventData.SendTo(World.Instance.GetClientsList(PlayerID), sendParameters);
 
             Log.Info("Player " + PlayerName + " join to game");
         }
         private void PlayerLeftGameHandler(SendParameters sendParameters)
         {
             EventData eventData = new EventData((byte)EventCode.PlayerLeftGame);
-            eventData.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.PlayerName, PlayerName } };
-            eventData.SendTo(World.Instance.Clients, sendParameters);
+            eventData.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.PlayerID, PlayerID } };
+            eventData.SendTo(World.Instance.GetClientsList(), sendParameters);
 
-            Log.Info("Player " + PlayerName + " left game");
+            Log.Info("Player " + PlayerName + "(id:" + PlayerID + ") left game");
         }
         private void GetPlayersListHandler(SendParameters sendParameters)
         {
             OperationResponse response = new OperationResponse((byte)OperationCode.GetPlayersList);
 
-            List<UnityClient> players = World.Instance.Clients.Except(new List<UnityClient> { this }).ToList();
-            Dictionary<string, object[]> dPlayers = players.ToDictionary(x => x.PlayerName, x => new object[] { x.Position.X, x.Position.Y, x.Position.Z, x.Position.Rotation.X, x.Position.Rotation.Y, x.Position.Rotation.Z, x.Position.Rotation.W });
+            List<UnityClient> players = World.Instance.GetClientsList(PlayerID);
+            Dictionary<int, object[]> dPlayers = players.ToDictionary(x => x.PlayerID, x => new object[] { x.PlayerName, x.Position.X, x.Position.Y, x.Position.Z, x.Position.Rotation.X, x.Position.Rotation.Y, x.Position.Rotation.Z, x.Position.Rotation.W });
 
             response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.PlayersList, dPlayers } };
             SendOperationResponse(response, sendParameters);
         }
+        private void GetCurrentPlayerInfo(SendParameters sendParameters)
+        {
+            OperationResponse response = new OperationResponse((byte)OperationCode.GetCurrentPlayerInfo);
+
+            response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.PlayerID, PlayerID } };
+            SendOperationResponse(response, sendParameters);
+        }
 
         #endregion
-        
+
     }
 }
