@@ -17,5 +17,8 @@ namespace GameServer.Common
         PlayerRotZ,
         PlayerRotW,
         PlayersList,
+        MobsList,
+        MobID,
+        MobType,
     }
 }

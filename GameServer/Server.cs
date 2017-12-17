@@ -8,7 +8,7 @@ namespace GameServer
 {
     public class Server : ApplicationBase
     {
-        private readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        public readonly ILogger Log = LogManager.GetCurrentClassLogger();
         protected override PeerBase CreatePeer(InitRequest initRequest)
         {
             return new UnityClient(initRequest);
@@ -23,6 +23,7 @@ namespace GameServer
                 XmlConfigurator.ConfigureAndWatch(file);
             }
             Log.Info("Start server");
+            World.Instance.SpawnMobs();
         }
 
         protected override void TearDown()

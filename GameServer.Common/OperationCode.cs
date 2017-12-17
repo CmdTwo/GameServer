@@ -13,5 +13,6 @@ namespace GameServer.Common
         PlayerLeftGame,
         GetPlayersList,
         GetCurrentPlayerInfo,
+        GetMobsList,
     }
 }

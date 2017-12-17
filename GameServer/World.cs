@@ -2,22 +2,35 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System;
+using GameServer.Common;
+using GameServer.Territory;
+using GameServer.Mob;
+using ExitGames.Logging;
 
 namespace GameServer
 {
     public class World
     {
+        private readonly ILogger Log = LogManager.GetCurrentClassLogger();
         private readonly ReaderWriterLockSlim readerWriterLockSlim;
+        private const int MapX = 1000;
+        private const int MapY = 1;
+        private const int MapZ = 1000;
+
         private Stack<int> AvailableIDs;
         public Dictionary<int, UnityClient> Clients { get; private set; }
+        public Dictionary<int, Mob.Mob> Mobs { get; private set; }
         public static readonly World Instance = new World();
         public World()
         {
             Clients = new Dictionary<int, UnityClient>();
+            Mobs = new Dictionary<int, Mob.Mob>();
             readerWriterLockSlim = new ReaderWriterLockSlim();
             AvailableIDs = new Stack<int>();
         }
 
+        #region Client
         public bool IsContain(int ID)
         {
             using (ReadLock.TryEnter(this.readerWriterLockSlim, 1000))
@@ -62,6 +75,38 @@ namespace GameServer
         {
             return GetClientsList().Except(new List<UnityClient> { Clients[exceptID] }).ToList();
         }
+        #endregion
+
+        #region Mob
+        public void SpawnMobs()
+        {
+            Log.Debug("Star spawning mobs");
+            Random rand = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                //Vector3Net position = new Vector3Net(rand.Next(0, MapX), MapY, rand.Next(0, MapZ), Vector3Net.RotationNet.Zero);
+                Vector3Net position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
+                foreach (OccupiedTerritory territory in OccupiedTerritory.OccupiedTerrotpryes)
+                {
+                    if (!territory.IsContain(position))
+                    {
+                        Mob.Mob mob = new Mob.Mob(position, rand.Next(1, 4), Mobs.Count + 1);
+                        Mobs.Add(Mobs.Count + 1, mob);
+                        Log.Debug("Mob: " + Mobs.Count + " | created on | " + mob.Position.X + " : " + mob.Position.Z);
+                    }
+                    else
+                    {
+                        //position = new Vector3Net(rand.Next(0, MapX), MapY, rand.Next(0, MapZ), Vector3Net.RotationNet.Zero);
+                        position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
+                    }
+                }
+            }
+        }
+        public List<Mob.Mob> GetMobsList()
+        {
+            return Mobs.Select(x => x.Value).ToList();
+        }
+        #endregion
 
         ~World()
         {

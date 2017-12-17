@@ -56,12 +56,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mob\Mob.cs" />
     <Compile Include="Operations\BaseOperation.cs" />
     <Compile Include="Operations\GetCurrentPlayerInfo.cs" />
     <Compile Include="Operations\PlayerMove.cs" />
     <Compile Include="Operations\EnterServer.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Territory\OccuipedShape.cs" />
+    <Compile Include="Territory\OccupiedTerritory.cs" />
     <Compile Include="UnityClient.cs" />
     <Compile Include="World.cs" />
   </ItemGroup>

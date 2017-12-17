@@ -21,6 +21,7 @@ namespace GameServer.Common
                 Z = z;
                 W = w;
             }
+            public static RotationNet Zero = new RotationNet(0, 0, 0, 0);
         }
 
         public float X { get; set; }

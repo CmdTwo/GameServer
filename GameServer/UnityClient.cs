@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using PhotonHostRuntimeInterfaces;
 using ExitGames.Logging;
 using GameServer.Common;
+using GameServer.Mob;
 
 namespace GameServer
 {
@@ -59,6 +60,11 @@ namespace GameServer
                 case (byte)OperationCode.GetCurrentPlayerInfo:
                     {
                         GetCurrentPlayerInfo(sendParameters);
+                        break;
+                    }
+                case (byte)OperationCode.GetMobsList:
+                    {
+                        GetMobsListHandler(sendParameters);
                         break;
                     }
                 default:
@@ -167,7 +173,16 @@ namespace GameServer
             response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.PlayerID, PlayerID } };
             SendOperationResponse(response, sendParameters);
         }
+        private void GetMobsListHandler(SendParameters sendParameters)
+        {
+            OperationResponse response = new OperationResponse((byte)OperationCode.GetMobsList);
 
+            List<Mob.Mob> mobs = World.Instance.GetMobsList();
+            Dictionary<int, object[]> dMobs = mobs.ToDictionary(x => x.MobID, x => new object[] { x.Position.X, x.Position.Y, x.Position.Z, x.Position.Rotation.X, x.Position.Rotation.Y, x.Position.Rotation.Z, x.Position.Rotation.W, x.Type });
+
+            response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.MobsList, dMobs } };
+            SendOperationResponse(response, sendParameters);
+        }
         #endregion
 
     }
