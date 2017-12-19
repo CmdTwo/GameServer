@@ -21,5 +21,6 @@ namespace GameServer.Common
         MobID,
         MobType,
         Damage,
+        Coins,
     }
 }

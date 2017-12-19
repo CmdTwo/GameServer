@@ -72,6 +72,9 @@ namespace GameServer
                         MobAttackedByPlayerHandler(operationRequest, sendParameters);
                         break;
                     }
+                case (byte)OperationCode.UpdateMobInfo:
+                    UpdateMobInfoHandler(operationRequest, sendParameters);
+                    break;
                 default:
                     {
                         Log.Debug("Unknow OperationRequest received: " + operationRequest.OperationCode);
@@ -81,7 +84,6 @@ namespace GameServer
         }
 
         #region Operation Request Handlers
-
         private void EnterServerHandler(OperationRequest operationRequest, SendParameters sendParameters)
         {
             Operations.EnterServer enterGameRequest = new Operations.EnterServer(Protocol, operationRequest);
@@ -94,8 +96,6 @@ namespace GameServer
 
             PlayerName = enterGameRequest.PlayerName;
             PlayerID = World.Instance.AddClient(this);
-
-            SendOperationResponse(enterGameRequest.GetResponse(ErrorCode.InvaildParameters), sendParameters);
 
             OperationResponse response = new OperationResponse(operationRequest.OperationCode);
             response.ReturnCode = (short)ErrorCode.Ok;
@@ -203,17 +203,54 @@ namespace GameServer
 
             //}
             Log.Debug("Mob#" + mobAttackedRequest.MobID + " attaked by player#" + PlayerID + " (-" + mobAttackedRequest.Damage + ")");
-            World.Instance.Mobs[mobAttackedRequest.MobID].Coins -= mobAttackedRequest.Damage;
+            Mob.Mob mob = World.Instance.Mobs[mobAttackedRequest.MobID];
+            mob.Coins -= mobAttackedRequest.Damage;
 
-            EventData eventData = new EventData((byte)EventCode.MobAttackedByPlayer);
-            eventData.Parameters = new Dictionary<byte, object> {
+            //Log.Debug("Mob coins:" + mob.Coins + " | " + mob.StartCoins + " | isDead? " + mob.IsDead);
+
+            if (mob.IsDead)
+            {
+                MobDiedEvent(mob.MobID);
+                OperationResponse response = new OperationResponse((byte)OperationCode.MobDefeatedByPlayer);
+                response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.MobID, mob.MobID }, { (byte)ParameterCode.Coins, mob.StartCoins } };
+                SendOperationResponse(response, sendParameters);
+            }
+            else
+            {
+                EventData eventData = new EventData((byte)EventCode.MobAttackedByPlayer);
+                eventData.Parameters = new Dictionary<byte, object> {
                 { (byte)ParameterCode.MobID, mobAttackedRequest.MobID },
                 { (byte)ParameterCode.Damage, mobAttackedRequest.Damage },
                 { (byte)ParameterCode.PlayerID, PlayerID }
                         };
-            eventData.SendTo(World.Instance.GetClientsList(), sendParameters);
+                eventData.SendTo(World.Instance.GetClientsList(), sendParameters);
+            }
+        }
+        public void UpdateMobInfoHandler(OperationRequest operationRequest, SendParameters sendParameters)
+        {
+            Operations.UpdateMobInfo updateMobInfoRequest = new Operations.UpdateMobInfo(Protocol, operationRequest);
+
+            if (!updateMobInfoRequest.IsValid)
+            {
+                SendOperationResponse(updateMobInfoRequest.GetResponse(ErrorCode.InvaildParameters), sendParameters);
+                return;
+            }
+
+            World.Instance.Mobs[updateMobInfoRequest.MobID].StartCoins = updateMobInfoRequest.Coins;
+            World.Instance.Mobs[updateMobInfoRequest.MobID].Coins = updateMobInfoRequest.Coins;
+
+           // Log.Debug("Add coins: " + updateMobInfoRequest.Coins + " | Current: " + World.Instance.Mobs[updateMobInfoRequest.MobID].StartCoins);
         }
         #endregion
 
+        #region Server Events
+        public void MobDiedEvent(int MobID)
+        {
+            EventData eventData = new EventData((byte)EventCode.MobDied);
+            eventData.Parameters = new Dictionary<byte, object> {
+                { (byte)ParameterCode.MobID, MobID } };
+            eventData.SendTo(World.Instance.GetClientsList(), new SendParameters() { Unreliable = true });
+        }
+        #endregion
     }
 }

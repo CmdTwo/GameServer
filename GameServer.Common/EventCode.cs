@@ -11,5 +11,6 @@ namespace GameServer.Common
         PlayerJoinToGame,
         PlayerLeftGame,
         MobAttackedByPlayer,
+        MobDied,
     }
 }
