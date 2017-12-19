@@ -10,5 +10,6 @@ namespace GameServer.Common
         PlayerMove,
         PlayerJoinToGame,
         PlayerLeftGame,
+        MobAttackedByPlayer,
     }
 }

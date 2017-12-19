@@ -14,5 +14,6 @@ namespace GameServer.Common
         GetPlayersList,
         GetCurrentPlayerInfo,
         GetMobsList,
+        MobAttackedByPlayer,
     }
 }

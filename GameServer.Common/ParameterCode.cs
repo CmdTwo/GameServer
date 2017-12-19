@@ -20,5 +20,6 @@ namespace GameServer.Common
         MobsList,
         MobID,
         MobType,
+        Damage,
     }
 }

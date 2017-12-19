@@ -14,9 +14,13 @@ namespace GameServer
     {
         private readonly ILogger Log = LogManager.GetCurrentClassLogger();
         private readonly ReaderWriterLockSlim readerWriterLockSlim;
-        private const int MapX = 1000;
-        private const int MapY = 1;
-        private const int MapZ = 1000;
+
+        private const int SpawnOnMapX_Min = 20;
+        private const int SpawnOnMapZ_Min = 20;
+
+        private const int SpawnOnMapX_Max = 50;
+        private const int SpawnOnMapY = 1;
+        private const int SpawnOnMapZ_Max = 50;
 
         private Stack<int> AvailableIDs;
         public Dictionary<int, UnityClient> Clients { get; private set; }
@@ -84,8 +88,8 @@ namespace GameServer
             Random rand = new Random();
             for (int i = 0; i < 10; i++)
             {
-                //Vector3Net position = new Vector3Net(rand.Next(0, MapX), MapY, rand.Next(0, MapZ), Vector3Net.RotationNet.Zero);
-                Vector3Net position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
+                Vector3Net position = new Vector3Net(rand.Next(SpawnOnMapX_Min, SpawnOnMapX_Max), SpawnOnMapY, rand.Next(SpawnOnMapZ_Min, SpawnOnMapZ_Max), Vector3Net.RotationNet.Zero);
+               // Vector3Net position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
                 foreach (OccupiedTerritory territory in OccupiedTerritory.OccupiedTerrotpryes)
                 {
                     if (!territory.IsContain(position))
@@ -96,8 +100,8 @@ namespace GameServer
                     }
                     else
                     {
-                        //position = new Vector3Net(rand.Next(0, MapX), MapY, rand.Next(0, MapZ), Vector3Net.RotationNet.Zero);
-                        position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
+                        position = new Vector3Net(rand.Next(SpawnOnMapX_Min, SpawnOnMapX_Max), SpawnOnMapY, rand.Next(SpawnOnMapZ_Min, SpawnOnMapZ_Max), Vector3Net.RotationNet.Zero);
+                        //position = new Vector3Net(20, MapY, 20, Vector3Net.RotationNet.Zero);
                     }
                 }
             }

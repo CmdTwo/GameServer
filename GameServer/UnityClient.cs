@@ -67,6 +67,11 @@ namespace GameServer
                         GetMobsListHandler(sendParameters);
                         break;
                     }
+                case (byte)OperationCode.MobAttackedByPlayer:
+                    {
+                        MobAttackedByPlayerHandler(operationRequest, sendParameters);
+                        break;
+                    }
                 default:
                     {
                         Log.Debug("Unknow OperationRequest received: " + operationRequest.OperationCode);
@@ -182,6 +187,31 @@ namespace GameServer
 
             response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.MobsList, dMobs } };
             SendOperationResponse(response, sendParameters);
+        }
+        private void MobAttackedByPlayerHandler(OperationRequest operationRequest, SendParameters sendParameters)
+        {
+            Operations.MobAttackedByPlayer mobAttackedRequest = new Operations.MobAttackedByPlayer(Protocol, operationRequest);
+
+            if (!mobAttackedRequest.IsValid)
+            {
+                SendOperationResponse(mobAttackedRequest.GetResponse(ErrorCode.InvaildParameters), sendParameters);
+                return;
+            }
+
+            //if (World.Instance.Mobs.ContainsKey(mobAttackedRequest.MobID))
+            //{
+
+            //}
+            Log.Debug("Mob#" + mobAttackedRequest.MobID + " attaked by player#" + PlayerID + " (-" + mobAttackedRequest.Damage + ")");
+            World.Instance.Mobs[mobAttackedRequest.MobID].Coins -= mobAttackedRequest.Damage;
+
+            EventData eventData = new EventData((byte)EventCode.MobAttackedByPlayer);
+            eventData.Parameters = new Dictionary<byte, object> {
+                { (byte)ParameterCode.MobID, mobAttackedRequest.MobID },
+                { (byte)ParameterCode.Damage, mobAttackedRequest.Damage },
+                { (byte)ParameterCode.PlayerID, PlayerID }
+                        };
+            eventData.SendTo(World.Instance.GetClientsList(), sendParameters);
         }
         #endregion
 

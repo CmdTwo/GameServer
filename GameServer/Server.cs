@@ -8,7 +8,7 @@ namespace GameServer
 {
     public class Server : ApplicationBase
     {
-        public readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private readonly ILogger Log = LogManager.GetCurrentClassLogger();
         protected override PeerBase CreatePeer(InitRequest initRequest)
         {
             return new UnityClient(initRequest);
