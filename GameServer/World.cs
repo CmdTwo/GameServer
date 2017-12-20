@@ -114,7 +114,7 @@ namespace GameServer
 
         ~World()
         {
-            //Clients.Clear();
+            Clients.Clear();
             readerWriterLockSlim.Dispose();
         }
 

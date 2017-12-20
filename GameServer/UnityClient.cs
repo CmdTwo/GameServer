@@ -183,7 +183,7 @@ namespace GameServer
             OperationResponse response = new OperationResponse((byte)OperationCode.GetMobsList);
 
             List<Mob.Mob> mobs = World.Instance.GetMobsList();
-            Dictionary<int, object[]> dMobs = mobs.ToDictionary(x => x.MobID, x => new object[] { x.Position.X, x.Position.Y, x.Position.Z, x.Position.Rotation.X, x.Position.Rotation.Y, x.Position.Rotation.Z, x.Position.Rotation.W, x.Type });
+            Dictionary<int, object[]> dMobs = mobs.ToDictionary(x => x.MobID, x => new object[] { x.Position.X, x.Position.Y, x.Position.Z, x.Position.Rotation.X, x.Position.Rotation.Y, x.Position.Rotation.Z, x.Position.Rotation.W, x.Type, x.Dead });
 
             response.Parameters = new Dictionary<byte, object> { { (byte)ParameterCode.MobsList, dMobs } };
             SendOperationResponse(response, sendParameters);
@@ -208,7 +208,7 @@ namespace GameServer
 
             //Log.Debug("Mob coins:" + mob.Coins + " | " + mob.StartCoins + " | isDead? " + mob.IsDead);
 
-            if (mob.IsDead)
+            if (mob.Dead)
             {
                 MobDiedEvent(mob.MobID);
                 OperationResponse response = new OperationResponse((byte)OperationCode.MobDefeatedByPlayer);
